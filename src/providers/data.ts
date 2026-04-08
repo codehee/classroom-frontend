@@ -32,13 +32,24 @@ const mockSubjects: Subject[] = [
 ];
 
 export const dataProvider: DataProvider = {
-  getList: async <TData extends BaseRecord = BaseRecord>({resource}:
+  getList: async <TData extends BaseRecord = BaseRecord>({resource, filters}:
     GetListParams) => {
       if(resource !== 'subjects') return {data: [] as TData[], total: 0};
 
+      let filtered = [...mockSubjects];
+
+      filters?.forEach((filter) => {
+        if ("field" in filter && filter.field === "department" && filter.operator === "eq") {
+          filtered = filtered.filter(s => s.department === filter.value);
+        }
+        if ("field" in filter && filter.field === "name" && filter.operator === "contains") {
+          filtered = filtered.filter(s => s.name.toLowerCase().includes(filter.value.toLowerCase()));
+        }
+      });
+
       return{
-        data: mockSubjects as unknown as TData[],
-        total: mockSubjects.length,
+        data: filtered as unknown as TData[],
+        total: filtered.length,
       }
   },
 
